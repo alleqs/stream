@@ -6,8 +6,8 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
-// const port = 8080;
-const port = 80;
+console.log("process.env.PORT :>> ", process.env.PORT);
+const port = process.env.PORT ?? 8000;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 console.log("__dirname :>> ", __dirname);
 
@@ -18,9 +18,13 @@ const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, "./public")));
 
-app.get("/ping", (_, res) => res.send("pong !!"));
+if ((process.env.NODE_ENV = "development")) {
+  app.get("/api", (_, res) =>
+    res.sendFile(path.join(__dirname, "public", "index.html"))
+  );
+}
 
-app.get("/stream/:cam", (req, res) => {
+app.get("/api/stream/:cam", (req, res) => {
   const { cam } = req.params;
   console.log("cam :>> ", cam);
   res.setHeader("content-type", "video/mp4");
@@ -64,15 +68,16 @@ app.get("/stream/:cam", (req, res) => {
   );
 });
 
-app.get("/", (_, res) =>
-  res.sendFile(path.join(__dirname, "public", "index.html"))
-);
-app.get("/cams-amount", (_, res) => {
+app.get("/api/cams-amount", (_, res) => {
   res.json({ camsAmount: cams.length });
 });
-app.get("/cams", (_, res) => {
+
+app.get("/api/cams", (_, res) => {
   res.json({ camDescrArr: cams.map(([_, descr, ar]) => [descr, ar]) });
 });
+
+app.get("/api/ping", (_, res) => res.send("pong !!"));
+
 app.listen(port, () =>
   console.log(`Video stream app listening on port ${port}!`)
 );

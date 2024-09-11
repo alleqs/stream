@@ -69,15 +69,15 @@ app.get("/api/stream/:cam", (req, res) => {
   //   );
 });
 
-app.get("/api/cams-amount", (_, res) => {
-  res.json({ camsAmount: cams.length });
-});
-
 app.get("/api/cams", (_, res) => {
   res.json({ camDescrArr: cams.map(([_, descr, ar]) => [descr, ar]) });
 });
 
 app.get("/api/ping", (_, res) => res.send("pong !!"));
+
+// app.get("/api/cams-amount", (_, res) => {
+//   res.json({ camsAmount: cams.length });
+// });
 
 app.listen(port, () =>
   console.log(`Video stream app listening on port ${port}!`)

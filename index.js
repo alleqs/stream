@@ -51,21 +51,21 @@ app.get("/api/stream/:cam", (req, res) => {
     .on("error", (err, stdout, stderr) => {
       console.log("error on cam", cam);
       console.error("error: " + err.message);
+      cmd.kill();
       return res.end();
     })
     .on("codecData", ({ format, video, video_details }) => {
       console.log("format :>> ", format);
       console.log("video :>> ", video);
-      //   console.log("a :>> ", video_details);
       console.log("res :>> ", video_details.at(-5));
       console.log("fps :>> ", video_details.at(-4));
       console.log("");
-      //   console.log("a :>> ", a);
-    })
-    //  .on("end", () => {
-    //    console.log("end");
-    //  })
-    .pipe(res, { end: true });
+    });
+  //  .on("end", () => {
+  //    console.log("end");
+  //  })
+
+  cmd.pipe(res, { end: true });
   //   );
 });
 

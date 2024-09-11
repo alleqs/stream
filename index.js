@@ -27,7 +27,6 @@ if ((process.env.NODE_ENV = "development")) {
 app.get("/api/stream/:cam", (req, res) => {
   const { cam } = req.params;
   console.log("cam :>> ", cam);
-  res.setHeader("content-type", "video/mp4");
   // res.setHeader("content-type", "video/x-flv");
   // const stat = fs.statSync(filePath);
   // res.setHeader("content-length", stat.size);
@@ -38,34 +37,36 @@ app.get("/api/stream/:cam", (req, res) => {
   // res.setHeader("content-type", "video/x-flv");
   const url = cams[cam][0];
   if (!url) return res.end();
+
+  res.contentType("video/mp4");
   const cmd = url.startsWith("rtsp")
     ? ffmpeg(url).inputOptions("-rtsp_transport tcp")
     : ffmpeg(url);
-  return (
-    cmd
-      .format("matroska")
-      .on("start", (commandLine) => {
-        console.log("Spawned Ffmpeg with command: " + commandLine);
-      })
-      .on("error", (err, stdout, stderr) => {
-        console.log("error on cam", cam);
-        console.error("error: " + err.message);
-        return res.end();
-      })
-      .on("codecData", ({ format, video, video_details }) => {
-        console.log("format :>> ", format);
-        console.log("video :>> ", video);
-        //   console.log("a :>> ", video_details);
-        console.log("res :>> ", video_details.at(-5));
-        console.log("fps :>> ", video_details.at(-4));
-        console.log("");
-        //   console.log("a :>> ", a);
-      })
-      //  .on("end", () => {
-      //    console.log("end");
-      //  })
-      .pipe(res, { end: true })
-  );
+  //   return (
+  cmd
+    .format("matroska")
+    .on("start", (commandLine) => {
+      console.log("Spawned Ffmpeg with command: " + commandLine);
+    })
+    .on("error", (err, stdout, stderr) => {
+      console.log("error on cam", cam);
+      console.error("error: " + err.message);
+      return res.end();
+    })
+    .on("codecData", ({ format, video, video_details }) => {
+      console.log("format :>> ", format);
+      console.log("video :>> ", video);
+      //   console.log("a :>> ", video_details);
+      console.log("res :>> ", video_details.at(-5));
+      console.log("fps :>> ", video_details.at(-4));
+      console.log("");
+      //   console.log("a :>> ", a);
+    })
+    //  .on("end", () => {
+    //    console.log("end");
+    //  })
+    .pipe(res, { end: true });
+  //   );
 });
 
 app.get("/api/cams-amount", (_, res) => {

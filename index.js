@@ -13,6 +13,7 @@ console.log("__dirname :>> ", __dirname);
 
 const json = readFileSync("./urls.json");
 const cams = JSON.parse(json);
+
 const app = express();
 
 app.use(cors());
@@ -35,14 +36,13 @@ app.get("/api/stream/:cam", (req, res) => {
   // fileStream.pipe(res)
 
   // res.setHeader("content-type", "video/x-flv");
-  const url = cams[cam][0];
+  const url = cams[cam].url;
   if (!url) return res.end();
 
   res.contentType("video/mp4");
   const cmd = url.startsWith("rtsp")
     ? ffmpeg(url).inputOptions("-rtsp_transport tcp")
     : ffmpeg(url);
-  //   return (
   cmd
     .format("matroska")
     .on("start", (commandLine) => {
@@ -66,49 +66,14 @@ app.get("/api/stream/:cam", (req, res) => {
   //  })
 
   cmd.pipe(res, { end: true });
-  //   );
 });
 
 app.get("/api/cams", (_, res) => {
-  res.json({ camDescrArr: cams.map(([_, descr, ar]) => [descr, ar]) });
+  res.json({ camInfoArr: cams.map(({ url, ...rest }) => rest) });
 });
 
 app.get("/api/ping", (_, res) => res.send("pong !!"));
 
-// app.get("/api/cams-amount", (_, res) => {
-//   res.json({ camsAmount: cams.length });
-// });
-
 app.listen(port, () =>
   console.log(`Video stream app listening on port ${port}!`)
 );
-
-// function handleError(error, res){
-//   console.log(`Error reading file ${filePath}.`);
-//   console.log(error);
-//   res.sendStatus(500);
-// }
-
-// const command =
-//    ffmpeg('/media/leo/Repo/repo/python/yolov8_2/out.mp4')
-//    .format('flv');
-//   //  ffmpeg('rtsp://admin:123456@192.168.0.74/11')
-//   //   .inputOptions('-rtsp_transport tcp')
-//     // .format('matroska');
-
-// command.on('start', function (commandLine) {
-//    console.log('Spawned Ffmpeg with command: ' + commandLine);
-//  })
-//   .on('error', function (err, stdout, stderr) {
-//    console.log('error: ' + err.message);
-//    console.log('stdout: ' + stdout);
-//    console.log('stderr: ' + stderr);
-//  })
-//  .on('end',  function () {
-//     console.log('end');
-//  });
-
-// const ffstream = command.pipe();
-// ffstream.on('data', chunk => {
-//   console.log('ffmpeg chunk length: ' + chunk.length + ' bytes');
-// });

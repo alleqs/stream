@@ -36,7 +36,7 @@ app.get("/api/stream/:cam", (req, res) => {
   // fileStream.pipe(res)
 
   // res.setHeader("content-type", "video/x-flv");
-  const url = cams[cam].url;
+  const url = cams[cam]?.url;
   if (!url) return res.end();
 
   res.contentType("video/mp4");
@@ -49,8 +49,8 @@ app.get("/api/stream/:cam", (req, res) => {
       console.log("Spawned Ffmpeg with command: " + commandLine);
     })
     .on("error", (err, stdout, stderr) => {
-      console.log("error on cam", cam);
-      console.error("error: " + err.message);
+      // console.log("error on cam", cam);
+      console.error("error: " + err.message + "on cam " + cam);
       cmd.kill();
       return res.end();
     })
@@ -60,12 +60,12 @@ app.get("/api/stream/:cam", (req, res) => {
       console.log("res :>> ", video_details.at(-5));
       console.log("fps :>> ", video_details.at(-4));
       console.log("");
+    })
+    .on("end", () => {
+      console.log("end");
     });
-  //  .on("end", () => {
-  //    console.log("end");
-  //  })
 
-  cmd.pipe(res, { end: true });
+  return cmd.pipe(res, { end: true });
 });
 
 app.get("/api/cams", (_, res) => {

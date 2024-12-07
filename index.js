@@ -79,13 +79,13 @@ app.get("/api/stream/:cam", (req, res) => {
 
     // res.setHeader("content-length", retrievedLength);
 
-    if (range !== undefined) {
-      res.setHeader(
-        "content-range",
-        `bytes ${start || 0}-${end || contentLength - 1}/${contentLength}`
-      );
-      res.setHeader("accept-ranges", "bytes");
-    }
+    //  if (range !== undefined) {
+    //    res.setHeader(
+    //      "content-range",
+    //      `bytes ${start || 0}-${end || contentLength - 1}/${contentLength}`
+    //    );
+    //    res.setHeader("accept-ranges", "bytes");
+    //  }
 
     //   res.contentType("video/mp4");
     const cmd = url.startsWith("rtsp")

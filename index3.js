@@ -54,11 +54,13 @@ app.get("/api/stream/:cam", (req, res) => {
       cmd.kill();
       return res.end();
     })
-    .on("codecData", ({ format, video, video_details }) => {
-      console.log("format :>> ", format);
-      console.log("video :>> ", video);
-      console.log("res :>> ", video_details.at(-5));
-      console.log("fps :>> ", video_details.at(-4));
+    .on("codecData", (a) => {
+      const { format, video, video_details } = a;
+      console.log("a :>> ", a);
+      // console.log("format :>> ", format);
+      // console.log("video :>> ", video);
+      // console.log("res :>> ", video_details.at(-5));
+      // console.log("fps :>> ", video_details.at(-4));
       console.log("");
     })
     .on("end", () => {

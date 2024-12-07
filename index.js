@@ -56,75 +56,64 @@ app.get("/api/stream/:cam", (req, res) => {
     }
   }
 
-  res.contentType("video/mp4");
+  res.contentType("video/x-matroska");
 
-  fs.stat(filePath, (err, stat) => {
-    if (err) {
-      console.error(`File stat error for ${filePath}.`);
-      console.error(err);
-      res.sendStatus(500);
-      return;
-    }
+  if (req.method === "HEAD") {
+    res.statusCode = 200;
+    res.setHeader("accept-ranges", "bytes");
+    // res.setHeader("content-length", contentLength);
+    res.end();
+  } else {
+    // let retrievedLength;
+    // if (start !== undefined && end !== undefined) {
+    //   retrievedLength = end + 1 - start;
+    // } else if (start !== undefined) {
+    //   retrievedLength = contentLength - start;
+    // } else if (end !== undefined) {
+    //   retrievedLength = end + 1;
+    // } else {
+    //   retrievedLength = contentLength;
+    // }
 
-    let contentLength = stat.size;
+    res.statusCode = start !== undefined || end !== undefined ? 206 : 200;
 
-    if (req.method === "HEAD") {
-      res.statusCode = 200;
+    // res.setHeader("content-length", retrievedLength);
+
+    if (range !== undefined) {
+      res.setHeader(
+        "content-range",
+        `bytes ${start || 0}-${end || contentLength - 1}/${contentLength}`
+      );
       res.setHeader("accept-ranges", "bytes");
-      res.setHeader("content-length", contentLength);
-      res.end();
-    } else {
-      let retrievedLength;
-      if (start !== undefined && end !== undefined) {
-        retrievedLength = end + 1 - start;
-      } else if (start !== undefined) {
-        retrievedLength = contentLength - start;
-      } else if (end !== undefined) {
-        retrievedLength = end + 1;
-      } else {
-        retrievedLength = contentLength;
-      }
-
-      res.statusCode = start !== undefined || end !== undefined ? 206 : 200;
-
-      res.setHeader("content-length", retrievedLength);
-
-      if (range !== undefined) {
-        res.setHeader(
-          "content-range",
-          `bytes ${start || 0}-${end || contentLength - 1}/${contentLength}`
-        );
-        res.setHeader("accept-ranges", "bytes");
-      }
-
-      //   res.contentType("video/mp4");
-      const cmd = url.startsWith("rtsp")
-        ? ffmpeg(url).inputOptions("-rtsp_transport udp")
-        : ffmpeg(url);
-      cmd
-        .format("matroska")
-        .on("start", (commandLine) => {
-          console.log("Spawned Ffmpeg with command: " + commandLine);
-        })
-        .on("error", (err, stdout, stderr) => {
-          console.error("error: " + err.message + "on cam " + cam);
-          cmd.kill();
-          return res.end();
-        })
-        .on("codecData", ({ format, video, video_details }) => {
-          console.log("format :>> ", format);
-          console.log("video :>> ", video);
-          console.log("res :>> ", video_details.at(-5));
-          console.log("fps :>> ", video_details.at(-4));
-          console.log("");
-        })
-        .on("end", () => {
-          console.log("end");
-        });
-
-      return cmd.pipe(res, { end: true });
     }
-  });
+
+    //   res.contentType("video/mp4");
+    const cmd = url.startsWith("rtsp")
+      ? ffmpeg(url).inputOptions("-rtsp_transport udp")
+      : ffmpeg(url);
+    cmd
+      .format("matroska")
+      .on("start", (commandLine) => {
+        console.log("Spawned Ffmpeg with command: " + commandLine);
+      })
+      .on("error", (err, stdout, stderr) => {
+        console.error("error: " + err.message + "on cam " + cam);
+        cmd.kill();
+        return res.end();
+      })
+      .on("codecData", ({ format, video, video_details }) => {
+        console.log("format :>> ", format);
+        console.log("video :>> ", video);
+        console.log("res :>> ", video_details.at(-5));
+        console.log("fps :>> ", video_details.at(-4));
+        console.log("");
+      })
+      .on("end", () => {
+        console.log("end");
+      });
+
+    return cmd.pipe(res, { end: true });
+  }
 });
 
 app.get("/api/cams", (_, res) => {

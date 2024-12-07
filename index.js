@@ -60,7 +60,7 @@ app.get("/api/stream/:cam", (req, res) => {
 
   if (req.method === "HEAD") {
     res.statusCode = 200;
-    res.setHeader("accept-ranges", "bytes");
+    //  res.setHeader("accept-ranges", "bytes");
     // res.setHeader("content-length", contentLength);
     res.end();
   } else {
@@ -75,7 +75,7 @@ app.get("/api/stream/:cam", (req, res) => {
     //   retrievedLength = contentLength;
     // }
 
-    res.statusCode = start !== undefined || end !== undefined ? 206 : 200;
+    //  res.statusCode = start !== undefined || end !== undefined ? 206 : 200;
 
     // res.setHeader("content-length", retrievedLength);
 

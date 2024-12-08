@@ -39,7 +39,7 @@ app.get("/api/stream/:cam", (req, res) => {
   const url = cams[cam]?.url;
   if (!url) return res.end();
 
-  res.contentType("video/mp4");
+  res.contentType("video/x-matroska");
   const cmd = url.startsWith("rtsp")
     ? ffmpeg(url).inputOptions("-rtsp_transport udp")
     : ffmpeg(url);

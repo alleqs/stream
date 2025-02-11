@@ -28,48 +28,44 @@ if ((process.env.NODE_ENV = "development")) {
 app.get("/api/stream/:cam", (req, res) => {
   const { cam } = req.params;
   const url = cams[cam]?.url;
+
   if (!url) {
     res.status(404).send("Camera not found");
     return;
   }
 
   // Headers para compatibilidade com Safari
-  //   res.contentType("video/x-matroska");
-  res.setHeader("Content-Type", "video/x-matroska"); // Use um formato suportado como MP4
+  res.setHeader("Content-Type", "video/mp4"); // Use um formato suportado como MP4
   res.setHeader("Transfer-Encoding", "chunked"); // Indica que é um fluxo contínuo
   res.setHeader("Accept-Ranges", "bytes");
-  //   res.contentType("video/x-matroska");
 
   const cmd = url.startsWith("rtsp")
-    ? //  ? ffmpeg(url).inputOptions("-rtsp_transport udp")
-      ffmpeg(url).inputOptions("-rtsp_transport tcp")
+    ? ffmpeg(url)
+        .inputOptions([
+          "-rtsp_transport tcp",
+          //   "-movflags frag_keyframe+empty_moov",
+        ]) // TCP é mais estável para Safari
+        .outputOptions(["-c copy", "-movflags frag_keyframe+empty_moov"])
     : ffmpeg(url);
+
   cmd
-    //  .format("matroska")
-    .format("matroska") // MP4 para compatibilidade com Safari
-    //  .videoCodec("libx264") // Codificação padrão para Safari
-    //  .audioCodec("aac") // Codificação de áudio
+    .format("mp4") // MP4 para compatibilidade com Safari
+    .videoCodec("libx264") // Codificação padrão para Safari
+    .audioCodec("aac") // Codificação de áudio
+
     .on("start", (commandLine) => {
       console.log("Spawned Ffmpeg with command: " + commandLine);
     })
-    .on("error", (err, stdout, stderr) => {
-      console.error("error: " + err.message + "on cam " + cam);
-      cmd.kill();
-      return res.end();
-    })
-    .on("codecData", ({ format, video, video_details }) => {
-      console.log("format :>> ", format);
-      console.log("video :>> ", video);
-      console.log("res. :>> ", video_details.at(-5));
-      console.log("fps :>> ", video_details.at(-4));
-      console.log("");
+    .on("error", (err) => {
+      console.error("Error with FFMPEG:", err.message);
+      res.end();
     })
     .on("end", () => {
-      console.log("end");
-      return res.end();
+      console.log("Stream ended");
+      res.end();
     });
 
-  return cmd.pipe(res, { end: true });
+  cmd.pipe(res, { end: true });
 });
 
 app.get("/api/cams", (_, res) => {

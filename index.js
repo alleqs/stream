@@ -42,7 +42,7 @@ app.get("/api/stream/:cam", (req, res) => {
 
   const cmd = url.startsWith("rtsp")
     ? //  ? ffmpeg(url).inputOptions("-rtsp_transport udp")
-      ffmpeg(url).inputOptions("-rtsp_transport tcp")
+      ffmpeg(url).inputOptions("-rtsp_transport udp")
     : ffmpeg(url);
   cmd
     //  .format("matroska")

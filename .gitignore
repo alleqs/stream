@@ -1,5 +1,5 @@
 .env
 node_modules
 public
-urls.json
+urls*.json
 a.txt

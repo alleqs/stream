@@ -20,12 +20,12 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, "./public")));
 
 if ((process.env.NODE_ENV = "development")) {
-  app.get("/api", (_, res) =>
+  app.get("/stm", (_, res) =>
     res.sendFile(path.join(__dirname, "public", "index.html"))
   );
 }
 
-app.get("/api/stream/:cam", (req, res) => {
+app.get("/stm/stream/:cam", (req, res) => {
   const { cam } = req.params;
   const url = cams[cam]?.url;
   if (!url) {
@@ -72,11 +72,11 @@ app.get("/api/stream/:cam", (req, res) => {
   return cmd.pipe(res, { end: true });
 });
 
-app.get("/api/cams", (_, res) => {
+app.get("/stm/cams", (_, res) => {
   res.json({ camInfoArr: cams.map(({ url, ...rest }) => rest) });
 });
 
-app.get("/api/ping", (_, res) => res.send("pong !!"));
+app.get("/stm/ping", (_, res) => res.send("pong !!"));
 
 app.listen(port, () =>
   console.log(`Video stream app listening on port ${port}!`)
